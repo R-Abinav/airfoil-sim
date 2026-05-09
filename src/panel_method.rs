@@ -8,7 +8,7 @@
 
 use std::f64::consts::PI;
 use nalgebra::{DMatrix, DVector};
-use crate::airfoil::{Airfoil, Point};
+use crate::airfoil::Airfoil;
 
 //represents a single panel between two airfoil surface points
 #[derive(Clone, Debug)]
@@ -117,7 +117,7 @@ pub fn solve(airfoil: &Airfoil, alpha_deg: f64, v_inf: f64) -> PanelResults {
         }
 
         //RHS: freestream normal component at panel i
-        rhs[i] = v_inf * (panels[i].phi - alpha).sin();
+        rhs[i] = -v_inf * (panels[i].beta - alpha).sin();
     }
 
     //apply Kutta condition
@@ -140,7 +140,7 @@ pub fn solve(airfoil: &Airfoil, alpha_deg: f64, v_inf: f64) -> PanelResults {
 
     for i in 0..n {
         //freestream tangential component
-        let vt_inf = v_inf * (panels[i].phi - alpha).cos();
+        let vt_inf = v_inf * (panels[i].beta - alpha).cos();
 
         //induced tangential velocity from all panels
         let vt_induced: f64 = (0..n)
@@ -152,7 +152,7 @@ pub fn solve(airfoil: &Airfoil, alpha_deg: f64, v_inf: f64) -> PanelResults {
     }
 
     //lift coefficient via Kutta
-    let cl = 2.0 / v_inf
+    let cl = -2.0 / v_inf
         * (0..n)
             .map(|j| gamma[j] * panels[j].length)
             .sum::<f64>();
